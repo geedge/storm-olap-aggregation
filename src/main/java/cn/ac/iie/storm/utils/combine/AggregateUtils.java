@@ -107,10 +107,8 @@ public class AggregateUtils {
                 initStr = initStr + "/" + splitArr[splitArr.length - headIndex];
             }
             dimesionsObj.put(name, initStr);
-            System.out.println("发送之前================================");
+
             collector.emit(new Values(splitArr[splitArr.length - headIndex], dimesionsObj.toString(), message.toString()));
-            System.out.println("send label ==============="+splitArr[splitArr.length - headIndex]);
-            System.out.println("send dimesion============="+dimesionsObj.toString());
 
 
             reSend(headIndex + 1, splitArr, initStr, collector, message, dimesionsObj, name);

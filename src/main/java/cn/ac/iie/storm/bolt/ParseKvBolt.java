@@ -138,7 +138,7 @@ public class ParseKvBolt extends BaseBasicBolt {
     private static void alignmentUtils(String parameters, JSONObject message, String name, String fieldName) {
         String[] alignmentPars = parameters.split(StreamAggregateConfig.FORMAT_SPLITTER);
         String data = message.getString(fieldName);
-        System.out.println("alignmentPars=" + Arrays.toString(alignmentPars) + "data=" + data);
+
         int subscript = Integer.parseInt(alignmentPars[0]);
         String[] fieldSplit = data.split(alignmentPars[1]);
         Long appID = Long.valueOf(fieldSplit[subscript]);

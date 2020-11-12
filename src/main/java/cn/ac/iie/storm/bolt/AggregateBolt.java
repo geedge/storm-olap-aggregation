@@ -67,16 +67,13 @@ public class AggregateBolt extends BaseBasicBolt {
             } else {
                 String label = input.getStringByField("label");
 
-                System.out.println("recv label=================="+label);
                 //action中某个协议的所有function,如果没有就默认
                 String[] metrics = actionMap.getOrDefault(label, actionMap.get("Default"));
 
                 String dimensions = input.getStringByField("dimensions");
 
-                System.out.println("recv dimensions=============="+dimensions);
                 String message = input.getStringByField("message");
 
-                System.out.println("recv message==================="+message);
                 //一条数据
                 JSONObject event = JSONObject.parseObject(message);
                 //数据中的key值 (protocol,device_id,isp)
