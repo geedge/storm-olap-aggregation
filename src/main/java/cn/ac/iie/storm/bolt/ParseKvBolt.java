@@ -64,46 +64,59 @@ public class ParseKvBolt extends BaseBasicBolt {
             if (TupleUtils.isTick(tuple)) {
                 updateAppRelation(appMap);
             } else {
-                //TODO 解析tuple的 message
-                JSONObject message = JSONObject.parseObject(tuple.getStringByField("source"));
+                String source = tuple.getStringByField("source");
+                if (StringUtil.isNotBlank(source)) {
+                    //TODO 解析tuple的 message
+                    JSONObject message = JSONObject.parseObject(tuple.getStringByField("source"));
+                    String protocolLabel = message.getString("common_protocol_label");
 
-                //TODO 新建一个dimensions的Json对象
-                JSONObject dimensionsObj = transDimensions(dimensions, message);
+                    if (StringUtil.isNotBlank(protocolLabel)) {
 
-                for (Object transform : transforms) {
-                    JSONObject transformObj = JSONObject.parseObject(transform.toString());
-                    String function = transformObj.getString("function");
-                    String name = transformObj.getString("name");
-                    String fieldName = transformObj.getString("fieldName");
-                    String parameters = transformObj.getString("parameters");
+                        //TODO 新建一个dimensions的Json对象
+                        JSONObject dimensionsObj = transDimensions(dimensions, message);
 
-                    switch (function) {
-                        case "alignment":
-                            if (StringUtil.isNotBlank(parameters)) {
-                                if (message.containsKey(fieldName)) {
-                                    alignmentUtils(parameters, message, name, fieldName);
-                                }
+                        for (Object transform : transforms) {
+                            JSONObject transformObj = JSONObject.parseObject(transform.toString());
+                            String function = transformObj.getString("function");
+                            String name = transformObj.getString("name");
+                            String fieldName = transformObj.getString("fieldName");
+                            String parameters = transformObj.getString("parameters");
+
+                            switch (function) {
+                                case "alignment":
+                                    if (StringUtil.isNotBlank(parameters)) {
+                                        if (message.containsKey(fieldName)) {
+                                            alignmentUtils(parameters, message, name, fieldName);
+                                        }
+                                    }
+                                    break;
+                                case "combination":
+                                    if (StringUtil.isNotBlank(parameters)) {
+                                        String l7Proto = message.getString("common_l7_protocol");
+                                        if (StringUtil.isNotBlank(l7Proto)) {
+                                            String res = l7Proto + "/" + message.getString(fieldName);
+                                            message.put(fieldName, res);
+                                            dimensionsObj.put(name, res);
+                                        }
+                                        combinationUtils(parameters, message, name, fieldName, dimensionsObj);
+                                        collector.emit(new Values(dimensionsObj.getString(name), dimensionsObj.toString(), message.toString()));
+                                    }
+                                    break;
+//                            case "hierarchy":
+//                                String hierarchyValue = message.getString(fieldName);
+//                                //TODO 执行拆分代码
+//                                if (StringUtil.isNotBlank(hierarchyValue) && StringUtil.isNotBlank(parameters)) {
+//                                    String[] hierarchyPars = parameters.split(StreamAggregateConfig.FORMAT_SPLITTER);
+//                                    String[] dimensionsArr = hierarchyValue.split(hierarchyPars[0]);
+//                                    //TODO 递归拼接tuple并发送出去
+//                                    System.out.println(dimensionsObj.get(name) + "---" + dimensionsObj.toString() + "---" + message.toString());
+//                                    AggregateUtils.reSend(1, dimensionsArr, "", collector, message, dimensionsObj, name);
+//                                }
+//                                break;
+                                default:
+                                    break;
                             }
-                            break;
-                        case "combination":
-                            if (StringUtil.isNotBlank(parameters)) {
-                                combinationUtils(parameters, message, name, fieldName, dimensionsObj);
-                            }
-                            break;
-                        case "hierarchy":
-                            String hierarchyValue = message.getString(fieldName);
-                            //TODO 执行拆分代码
-                            if (StringUtil.isNotBlank(hierarchyValue) && StringUtil.isNotBlank(parameters)) {
-                                String[] hierarchyPars = parameters.split(StreamAggregateConfig.FORMAT_SPLITTER);
-                                String[] dimensionsArr = hierarchyValue.split(hierarchyPars[0]);
-                                //TODO 递归拼接tuple并发送出去
-                                AggregateUtils.reSend(1, dimensionsArr, "", collector, message, dimensionsObj, name);
-                            }
-                            break;
-                        default:
-                            //数据原样输出
-                            collector.emit(new Values(null, null, message.toString()));
-                            break;
+                        }
                     }
                 }
             }
@@ -138,13 +151,13 @@ public class ParseKvBolt extends BaseBasicBolt {
     private static void alignmentUtils(String parameters, JSONObject message, String name, String fieldName) {
         String[] alignmentPars = parameters.split(StreamAggregateConfig.FORMAT_SPLITTER);
         String data = message.getString(fieldName);
-
+        logger.warn("alignmentPars=" + Arrays.toString(alignmentPars) + "data=" + data);
         int subscript = Integer.parseInt(alignmentPars[0]);
         String[] fieldSplit = data.split(alignmentPars[1]);
-        Long appID = Long.valueOf(fieldSplit[subscript]);
+        Long appId = Long.valueOf(fieldSplit[subscript]);
         int length = fieldSplit[subscript].length();
         StringBuilder sb = new StringBuilder(data);
-        message.put(name, sb.replace(0, length, appMap.get(appID)));
+        message.put(name, sb.replace(0, length, appMap.get(appId)));
     }
 
     /**

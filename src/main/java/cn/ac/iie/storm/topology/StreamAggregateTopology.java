@@ -1,6 +1,7 @@
 package cn.ac.iie.storm.topology;
 
-import cn.ac.iie.storm.bolt.AggregateBolt;
+import cn.ac.iie.storm.bolt.CalculateBolt;
+import cn.ac.iie.storm.bolt.GatheringBolt;
 import cn.ac.iie.storm.bolt.ResultSendBolt;
 import cn.ac.iie.storm.bolt.ParseKvBolt;
 import cn.ac.iie.storm.spout.CustomizedKafkaSpout;
@@ -66,15 +67,17 @@ public class StreamAggregateTopology {
         builder = new TopologyBuilder();
         builder.setSpout("CustomizedKafkaSpout", new CustomizedKafkaSpout(), StreamAggregateConfig.SPOUT_PARALLELISM);
 
-        builder.setBolt("ParseKvBolt", new ParseKvBolt(), StreamAggregateConfig.DATACENTER_BOLT_PARALLELISM)
+        builder.setBolt("ParseKvBolt", new ParseKvBolt(), StreamAggregateConfig.PARSE_BOLT_PARALLELISM)
                 .localOrShuffleGrouping("CustomizedKafkaSpout");
 
-        builder.setBolt("AggregateBolt", new AggregateBolt(), StreamAggregateConfig.DATACENTER_BOLT_PARALLELISM)
-                .fieldsGrouping("ParseKvBolt", new Fields("dimensions"));
+        builder.setBolt("CalculateBolt", new CalculateBolt(), StreamAggregateConfig.CALCULATE_BOLT_PARALLELISM)
+                .localOrShuffleGrouping("ParseKvBolt");
+
+        builder.setBolt("GatheringBolt", new GatheringBolt(), StreamAggregateConfig.GATHERING_BOLT_PARALLELISM)
+                .fieldsGrouping("CalculateBolt", new Fields("dimensions"));
 
         builder.setBolt("ResultSendBolt", new ResultSendBolt(), StreamAggregateConfig.KAFKA_BOLT_PARALLELISM)
-                .localOrShuffleGrouping("AggregateBolt");
-//        builder.setBolt("PrintBolt", new PrintBolt(), 3).localOrShuffleGrouping("LogFlowWriteSpout");
+                .localOrShuffleGrouping("GatheringBolt");
 
     }
 

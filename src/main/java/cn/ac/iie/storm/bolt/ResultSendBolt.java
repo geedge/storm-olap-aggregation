@@ -1,8 +1,12 @@
 package cn.ac.iie.storm.bolt;
 
 
+import cn.ac.iie.storm.utils.combine.AggregateUtils;
 import cn.ac.iie.storm.utils.common.LogSendKafka;
 import cn.ac.iie.storm.utils.file.StreamAggregateConfig;
+import com.alibaba.fastjson.JSONObject;
+import com.zdjizhi.utils.StringUtil;
+import kafka.utils.json.JsonObject;
 import org.apache.log4j.Logger;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.BasicOutputCollector;
@@ -31,7 +35,23 @@ public class ResultSendBolt extends BaseBasicBolt {
     @Override
     public void execute(Tuple tuple, BasicOutputCollector basicOutputCollector) {
         try {
-            logSendKafka.sendMessage(tuple.getStringByField("message"));
+            String message = tuple.getStringByField("message");
+            if (StringUtil.isNotBlank(message)) {
+                JSONObject jsonObject = JSONObject.parseObject(message);
+                StringBuffer stringBuffer = new StringBuffer();
+                String[] protocolIds = jsonObject.getString("protocol_id").split("/");
+                for (int i = (protocolIds.length - 1); i >= 0; i--) {
+                    if (StringUtil.isBlank(stringBuffer.toString())) {
+                        stringBuffer.append(protocolIds[i]);
+                        jsonObject.put("protocol_id", stringBuffer.toString());
+                        logSendKafka.sendMessage(jsonObject.toString());
+                    } else {
+                        stringBuffer.append("/").append(protocolIds[i]);
+                        jsonObject.put("protocol_id", stringBuffer.toString());
+                        logSendKafka.sendMessage(jsonObject.toString());
+                    }
+                }
+            }
         } catch (Exception e) {
             logger.error(StreamAggregateConfig.RESULTS_OUTPUT_TOPIC + "日志发送Kafka过程出现异常,异常信息:" + e);
         }
@@ -41,4 +61,5 @@ public class ResultSendBolt extends BaseBasicBolt {
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
 
     }
+
 }

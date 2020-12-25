@@ -24,13 +24,12 @@ import java.util.Map;
  * @Date2020/6/24 13:39
  * @Version V1.0
  **/
-public class AggregateBolt extends BaseBasicBolt {
-    private final static Logger logger = Logger.getLogger(AggregateBolt.class);
+public class CalculateBolt extends BaseBasicBolt {
+    private final static Logger logger = Logger.getLogger(CalculateBolt.class);
     private static final long serialVersionUID = -7666031217706448622L;
     private HashMap<String, JSONObject> metricsMap;
     private HashMap<String, String[]> actionMap;
     private HashMap<String, JSONObject> cacheMap;
-    private static String timestamp;
 
     /**
      * 只会在程序初始化的时候执行一次
@@ -40,9 +39,7 @@ public class AggregateBolt extends BaseBasicBolt {
      */
     @Override
     public void prepare(Map stormConf, TopologyContext context) {
-//        timestampValue = System.currentTimeMillis() / 1000;
         String schema = HttpClientUtil.requestByGetMethod(StreamAggregateConfig.SCHEMA_HTTP);
-        timestamp = AggregateUtils.getTimeMetric(schema);
         cacheMap = new HashMap<>(32);
 
         // TODO 获取action标签的内容
@@ -55,23 +52,17 @@ public class AggregateBolt extends BaseBasicBolt {
     public void execute(Tuple input, BasicOutputCollector collector) {
         try {
             if (TupleUtils.isTick(input)) {
-                long timestampValue = System.currentTimeMillis() / 1000;
-                for (String s : cacheMap.keySet()) {
-                    JSONObject result = JSONObject.parseObject(s);
-                    result.put(timestamp, timestampValue);
-                    result.putAll(cacheMap.get(s));
-                    collector.emit(new Values(result.toString()));
+                for (String key : cacheMap.keySet()) {
+                    collector.emit(new Values(key, cacheMap.get(key).toString()));
                 }
                 cacheMap.clear();
 
             } else {
                 String label = input.getStringByField("label");
-
                 //action中某个协议的所有function,如果没有就默认
                 String[] metrics = actionMap.getOrDefault(label, actionMap.get("Default"));
 
                 String dimensions = input.getStringByField("dimensions");
-
                 String message = input.getStringByField("message");
 
                 //一条数据
@@ -84,16 +75,9 @@ public class AggregateBolt extends BaseBasicBolt {
                     String name = metricsMap.get(metric).getString("name");
                     //可能为空
                     String fieldName = metricsMap.get(name).getString("fieldName");
-                    String nameValue = cacheMessage.getString(name);
-                    //map中的字段值
-                    nameValue = (nameValue == null) ? "0" : nameValue;
-
-                    String fieldNameValue = event.getString(fieldName);
-                    //数据中的字段值
-                    fieldNameValue = (fieldNameValue == null) ? "0" : fieldNameValue;
 
                     //TODO 每次新增函数，需要改动此处代码
-                    functionSet(name, cacheMessage, nameValue, fieldNameValue);
+                    functionSet(name, cacheMessage, cacheMessage.getString(name), event.getString(fieldName));
                 }
                 cacheMap.put(dimensions, cacheMessage);
 
@@ -106,13 +90,13 @@ public class AggregateBolt extends BaseBasicBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("message"));
+        declarer.declare(new Fields("dimensions", "message"));
     }
 
     @Override
     public Map<String, Object> getComponentConfiguration() {
         Map<String, Object> conf = new HashMap<String, Object>(16);
-        conf.put(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, StreamAggregateConfig.AGG_TIME);
+        conf.put(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, StreamAggregateConfig.FIRST_AGG_TIME);
         return conf;
     }
 
@@ -127,37 +111,37 @@ public class AggregateBolt extends BaseBasicBolt {
     private static void functionSet(String name, JSONObject cacheMessage, String nameValue, String fieldNameValue) {
         switch (name) {
             case "sessions":
-                cacheMessage.put(name, AggregateUtils.longSum(Long.parseLong(nameValue), Long.parseLong(fieldNameValue)));
+                cacheMessage.put(name, AggregateUtils.longSum(nameValue, fieldNameValue));
                 break;
             case "c2s_byte_num":
-                cacheMessage.put(name, AggregateUtils.longSum(Long.parseLong(nameValue), Long.parseLong(fieldNameValue)));
+                cacheMessage.put(name, AggregateUtils.longSum(nameValue, fieldNameValue));
                 break;
             case "s2c_byte_num":
-                cacheMessage.put(name, AggregateUtils.longSum(Long.parseLong(nameValue), Long.parseLong(fieldNameValue)));
+                cacheMessage.put(name, AggregateUtils.longSum(nameValue, fieldNameValue));
                 break;
             case "c2s_pkt_num":
-                cacheMessage.put(name, AggregateUtils.longSum(Long.parseLong(nameValue), Long.parseLong(fieldNameValue)));
+                cacheMessage.put(name, AggregateUtils.longSum(nameValue, fieldNameValue));
                 break;
             case "s2c_pkt_num":
-                cacheMessage.put(name, AggregateUtils.longSum(Long.parseLong(nameValue), Long.parseLong(fieldNameValue)));
+                cacheMessage.put(name, AggregateUtils.longSum(nameValue, fieldNameValue));
                 break;
             case "c2s_ipfrag_num":
-                cacheMessage.put(name, AggregateUtils.longSum(Long.parseLong(nameValue), Long.parseLong(fieldNameValue)));
+                cacheMessage.put(name, AggregateUtils.longSum(nameValue, fieldNameValue));
                 break;
             case "s2c_ipfrag_num":
-                cacheMessage.put(name, AggregateUtils.longSum(Long.parseLong(nameValue), Long.parseLong(fieldNameValue)));
+                cacheMessage.put(name, AggregateUtils.longSum(nameValue, fieldNameValue));
                 break;
             case "s2c_tcp_lostlen":
-                cacheMessage.put(name, AggregateUtils.longSum(Long.parseLong(nameValue), Long.parseLong(fieldNameValue)));
+                cacheMessage.put(name, AggregateUtils.longSum(nameValue, fieldNameValue));
                 break;
             case "c2s_tcp_lostlen":
-                cacheMessage.put(name, AggregateUtils.longSum(Long.parseLong(nameValue), Long.parseLong(fieldNameValue)));
+                cacheMessage.put(name, AggregateUtils.longSum(nameValue, fieldNameValue));
                 break;
             case "c2s_tcp_unorder_num":
-                cacheMessage.put(name, AggregateUtils.longSum(Long.parseLong(nameValue), Long.parseLong(fieldNameValue)));
+                cacheMessage.put(name, AggregateUtils.longSum(nameValue, fieldNameValue));
                 break;
             case "s2c_tcp_unorder_num":
-                cacheMessage.put(name, AggregateUtils.longSum(Long.parseLong(nameValue), Long.parseLong(fieldNameValue)));
+                cacheMessage.put(name, AggregateUtils.longSum(nameValue, fieldNameValue));
                 break;
 
             case "unique_sip_num":
@@ -171,4 +155,17 @@ public class AggregateBolt extends BaseBasicBolt {
                 break;
         }
     }
+
+
+//     cacheMessage.put("sessions", AggregateUtils.longSum(cacheMessage.getString("sessions"), event.getString("common_sessions")));
+//                cacheMessage.put("c2s_byte_num", AggregateUtils.longSum(cacheMessage.getString("c2s_byte_num"), event.getString("common_c2s_byte_num")));
+//                cacheMessage.put("s2c_byte_num", AggregateUtils.longSum(cacheMessage.getString("s2c_byte_num"), event.getString("common_s2c_byte_num")));
+//                cacheMessage.put("c2s_pkt_num", AggregateUtils.longSum(cacheMessage.getString("c2s_pkt_num"), event.getString("common_c2s_pkt_num")));
+//                cacheMessage.put("s2c_pkt_num", AggregateUtils.longSum(cacheMessage.getString("s2c_pkt_num"), event.getString("common_s2c_pkt_num")));
+//                cacheMessage.put("c2s_ipfrag_num", AggregateUtils.longSum(cacheMessage.getString("c2s_ipfrag_num"), event.getString("common_c2s_ipfrag_num")));
+//                cacheMessage.put("s2c_ipfrag_num", AggregateUtils.longSum(cacheMessage.getString("s2c_ipfrag_num"), event.getString("common_s2c_ipfrag_num")));
+//                cacheMessage.put("c2s_tcp_lostlen", AggregateUtils.longSum(cacheMessage.getString("c2s_tcp_lostlen"), event.getString("common_c2s_tcp_lostlen")));
+//                cacheMessage.put("s2c_tcp_lostlen", AggregateUtils.longSum(cacheMessage.getString("s2c_tcp_lostlen"), event.getString("common_s2c_tcp_lostlen")));
+//                cacheMessage.put("c2s_tcp_unorder_num", AggregateUtils.longSum(cacheMessage.getString("c2s_tcp_unorder_num"), event.getString("common_c2s_tcp_unorder_num")));
+//                cacheMessage.put("s2c_tcp_unorder_num", AggregateUtils.longSum(cacheMessage.getString("s2c_tcp_unorder_num"), event.getString("common_s2c_tcp_unorder_num")));
 }

@@ -27,9 +27,11 @@ public class AggregateUtils {
      * @param value2 第二个值
      * @return value1 + value2
      */
-    public static Long longSum(Long value1, Long value2) {
+    public static Long longSum(String value1, String value2) {
+        value1 = (value1 == null) ? "0" : value1;
+        value2 = (value2 == null) ? "0" : value2;
 
-        return value1 + value2;
+        return Long.parseLong(value1) + Long.parseLong(value2);
     }
 
     /**
@@ -81,23 +83,6 @@ public class AggregateUtils {
      * @param name
      */
     public static void reSend(int headIndex, String[] splitArr, String initStr, BasicOutputCollector collector, JSONObject message, JSONObject dimesionsObj, String name) {
-
-//        //递归拼接字符串
-//        if (splitArr.length == headIndex - 1) {
-//            //什么也不做
-//        } else {
-//            //递归的核心代码
-//            if ("".equals(initStr)) {
-//                initStr = splitArr[splitArr.length - headIndex];
-//            } else {
-//                initStr = initStr + "/" + splitArr[splitArr.length - headIndex];
-//            }
-//            dimesionsObj.put(name, initStr);
-//
-//            collector.emit(new Values(splitArr[splitArr.length - headIndex], dimesionsObj.toString(), message.toString()));
-//            reSend(headIndex + 1, splitArr, initStr, collector, message, dimesionsObj, name);
-//        }
-
         //递归拼接字符串
         if (splitArr.length != headIndex - 1) {
             //递归的核心代码
@@ -109,8 +94,6 @@ public class AggregateUtils {
             dimesionsObj.put(name, initStr);
 
             collector.emit(new Values(splitArr[splitArr.length - headIndex], dimesionsObj.toString(), message.toString()));
-
-
             reSend(headIndex + 1, splitArr, initStr, collector, message, dimesionsObj, name);
         }
     }
@@ -156,6 +139,17 @@ public class AggregateUtils {
                 .getString("name");
     }
 
+    public static void main(String[] args) {
+        String sc = "{\"status\":200,\"code\":\"200666\",\"queryKey\":null,\"success\":true,\"message\":\"ok\",\"statistics\":null,\"formatType\":null,\"meta\":null,\"data\":{\"type\":\"record\",\"name\":\"liveChart\",\"doc\":{\"timestamp\":{\"name\":\"stat_time\",\"type\":\"Long\"},\"dimensions\":[{\"name\":\"protocol_id\",\"fieldName\":\"common_protocol_label\",\"type\":\"String\"},{\"name\":\"entrance_id\",\"fieldName\":\"common_entrance_id\",\"type\":\"String\"},{\"name\":\"isp\",\"fieldName\":\"common_isp\",\"type\":\"String\"},{\"name\":\"data_center\",\"fieldName\":\"common_data_center\",\"type\":\"String\"}],\"metrics\":[{\"function\":\"sum\",\"name\":\"sessions\",\"fieldName\":\"common_sessions\"},{\"function\":\"sum\",\"name\":\"c2s_byte_num\",\"fieldName\":\"common_c2s_byte_num\"},{\"function\":\"sum\",\"name\":\"s2c_byte_num\",\"fieldName\":\"common_s2c_byte_num\"},{\"function\":\"sum\",\"name\":\"c2s_pkt_num\",\"fieldName\":\"common_c2s_pkt_num\"},{\"function\":\"sum\",\"name\":\"s2c_pkt_num\",\"fieldName\":\"common_s2c_pkt_num\"},{\"function\":\"sum\",\"name\":\"c2s_ipfrag_num\",\"fieldName\":\"common_c2s_ipfrag_num\"},{\"function\":\"sum\",\"name\":\"s2c_ipfrag_num\",\"fieldName\":\"common_s2c_ipfrag_num\"},{\"function\":\"sum\",\"name\":\"c2s_tcp_lostlen\",\"fieldName\":\"common_c2s_tcp_lostlen\"},{\"function\":\"sum\",\"name\":\"s2c_tcp_lostlen\",\"fieldName\":\"common_s2c_tcp_lostlen\"},{\"function\":\"sum\",\"name\":\"c2s_tcp_unorder_num\",\"fieldName\":\"common_c2s_tcp_unorder_num\"},{\"function\":\"sum\",\"name\":\"s2c_tcp_unorder_num\",\"fieldName\":\"common_s2c_tcp_unorder_num\"},{\"function\":\"disCount\",\"name\":\"unique_sip_num\",\"fieldName\":\"common_server_ip\"},{\"function\":\"disCount\",\"name\":\"unique_cip_num\",\"fieldName\":\"common_client_ip\"}],\"filters\":{\"type\":\"and\",\"fields\":[{\"fieldName\":\"common_protocol_label\",\"type\":\"not\",\"values\":null}]},\"transforms\":[{\"fieldName\":\"common_app_label\",\"function\":\"replaceapp\",\"name\":\"common_app_label\",\"parameters\":\"0,/\"},{\"function\":\"combination\",\"name\":\"protocol_id\",\"fieldName\":\"common_protocol_label\",\"parameters\":\"common_app_label,/\"},{\"function\":\"hierarchy\",\"name\":\"protocol_id\",\"fieldName\":\"common_protocol_label\",\"parameters\":\"/\"}],\"action\":[{\"label\":\"Default\",\"metrics\":\"sessions,c2s_byte_num,s2c_byte_num,c2s_pkt_num,s2c_pkt_num,c2s_ipfrag_num,s2c_ipfrag_num,c2s_tcp_lostlen,s2c_tcp_lostlen,c2s_tcp_unorder_num,s2c_tcp_unorder_num\"}],\"granularity\":{\"type\":\"period\",\"period\":\"5M\"}},\"fields\":[],\"task\":\"Protocol-Distribution\",\"in\":\"CONNECTION-RECORD-COMPLETED-LOG\",\"out\":\"TRAFFIC-PROTOCOL-STAT-LOG\"}}";
+        JSONObject jsonObject = JSONObject.parseObject(sc);
+        String data = jsonObject.getString("data");
+
+        System.out.println(JSONObject.parseObject(JSONObject.parseObject(JSONObject.parseObject(data)
+                .getString("doc"))
+                .getString("timestamp"))
+                .getString("name"));
+    }
+
     /**
      * 更新缓存中的对应关系map
      *
@@ -183,6 +177,7 @@ public class AggregateUtils {
             System.out.println((System.currentTimeMillis() - begin));
             logger.warn("更新缓存中的对应的APP关系,拉取接口数据长度:[" + objects.size());
         } catch (Exception e) {
+            e.printStackTrace();
             logger.error("更新缓存APP-ID失败,异常：" + e);
         }
     }

@@ -69,7 +69,13 @@ public class LogSendKafka {
         properties.put("request.timeout.ms", 30000);
         properties.put("batch.size", 262144);
         properties.put("buffer.memory", 33554432);
-        properties.put("compression.type", StreamAggregateConfig.KAFKA_COMPRESSION_TYPE);
+
+        /**
+         * 限流配置-20201117
+         */
+        properties.put(ProducerConfig.CLIENT_ID_CONFIG, StreamAggregateConfig.PRODUCER_CLIENT_ID);
+        properties.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, StreamAggregateConfig.PRODUCER_KAFKA_COMPRESSION_TYPE);
+
         kafkaProducer = new KafkaProducer<>(properties);
     }
 

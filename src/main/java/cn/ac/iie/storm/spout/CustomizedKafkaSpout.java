@@ -1,6 +1,7 @@
 package cn.ac.iie.storm.spout;
 
 import cn.ac.iie.storm.utils.file.StreamAggregateConfig;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -39,6 +40,11 @@ public class CustomizedKafkaSpout extends BaseRichSpout {
         props.put("auto.offset.reset", StreamAggregateConfig.AUTO_OFFSET_RESET);
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+
+        /**
+         * 限流配置-20201117
+         */
+        props.put(ConsumerConfig.CLIENT_ID_CONFIG, StreamAggregateConfig.CONSUMER_CLIENT_ID);
         return props;
     }
 
