@@ -1,13 +1,12 @@
-package cn.ac.iie.storm.bolt;
+package com.zdjizhi.storm.bolt;
 
 
-import cn.ac.iie.storm.utils.combine.AggregateUtils;
-import cn.ac.iie.storm.utils.common.LogSendKafka;
-import cn.ac.iie.storm.utils.file.StreamAggregateConfig;
+import com.zdjizhi.storm.utils.kafka.LogSendKafka;
+import com.zdjizhi.storm.utils.common.StreamAggregateConfig;
+import cn.hutool.log.Log;
+import cn.hutool.log.LogFactory;
 import com.alibaba.fastjson.JSONObject;
 import com.zdjizhi.utils.StringUtil;
-import kafka.utils.json.JsonObject;
-import org.apache.log4j.Logger;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.BasicOutputCollector;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -24,7 +23,7 @@ import java.util.Map;
 public class ResultSendBolt extends BaseBasicBolt {
 
     private static final long serialVersionUID = 3237813470939823159L;
-    private static Logger logger = Logger.getLogger(ResultSendBolt.class);
+    private static final Log logger = LogFactory.get();
     private LogSendKafka logSendKafka;
 
     @Override

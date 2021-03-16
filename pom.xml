@@ -40,7 +40,7 @@
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>cn.ac.iie.storm.topology.StreamAggregateTopology</mainClass>
+                                    <mainClass>com.zdjizhi.storm.topology.StreamAggregateTopology</mainClass>
                                 </transformer>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
@@ -201,6 +201,12 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
             <version>4.4.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.5.2</version>
         </dependency>
 
     </dependencies>

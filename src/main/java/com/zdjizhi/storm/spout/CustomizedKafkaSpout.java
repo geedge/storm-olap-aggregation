@@ -1,11 +1,12 @@
-package cn.ac.iie.storm.spout;
+package com.zdjizhi.storm.spout;
 
-import cn.ac.iie.storm.utils.file.StreamAggregateConfig;
+import com.zdjizhi.storm.utils.common.StreamAggregateConfig;
+import cn.hutool.log.Log;
+import cn.hutool.log.LogFactory;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.log4j.Logger;
 import org.apache.storm.spout.SpoutOutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -27,8 +28,7 @@ public class CustomizedKafkaSpout extends BaseRichSpout {
     private KafkaConsumer<String, String> consumer;
     private SpoutOutputCollector collector = null;
     private TopologyContext context = null;
-    private final static Logger logger = Logger.getLogger(CustomizedKafkaSpout.class);
-
+    private static final Log logger = LogFactory.get();
 
     private static Properties createConsumerConfig() {
         Properties props = new Properties();

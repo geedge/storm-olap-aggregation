@@ -1,12 +1,13 @@
-package cn.ac.iie.storm.topology;
+package com.zdjizhi.storm.topology;
 
-import cn.ac.iie.storm.bolt.CalculateBolt;
-import cn.ac.iie.storm.bolt.GatheringBolt;
-import cn.ac.iie.storm.bolt.ResultSendBolt;
-import cn.ac.iie.storm.bolt.ParseKvBolt;
-import cn.ac.iie.storm.spout.CustomizedKafkaSpout;
-import cn.ac.iie.storm.utils.file.StreamAggregateConfig;
-import org.apache.log4j.Logger;
+import com.zdjizhi.storm.bolt.CalculateBolt;
+import com.zdjizhi.storm.bolt.GatheringBolt;
+import com.zdjizhi.storm.bolt.ResultSendBolt;
+import com.zdjizhi.storm.bolt.ParseKvBolt;
+import com.zdjizhi.storm.spout.CustomizedKafkaSpout;
+import com.zdjizhi.storm.utils.common.StreamAggregateConfig;
+import cn.hutool.log.Log;
+import cn.hutool.log.LogFactory;
 import org.apache.storm.Config;
 import org.apache.storm.generated.AlreadyAliveException;
 import org.apache.storm.generated.AuthorizationException;
@@ -22,8 +23,7 @@ import org.apache.storm.tuple.Fields;
  **/
 public class StreamAggregateTopology {
 
-
-    private static Logger logger = Logger.getLogger(StreamAggregateTopology.class);
+    private static final Log logger = LogFactory.get();
     private final String topologyName;
     private final Config topologyConfig;
     private TopologyBuilder builder;
@@ -82,25 +82,24 @@ public class StreamAggregateTopology {
     }
 
     public static void main(String[] args) throws Exception {
-        StreamAggregateTopology csst = null;
+        StreamAggregateTopology streamAggregateTopology;
         boolean runLocally = true;
-        String parameter = "remote";
         int size = 2;
-        if (args.length >= size && parameter.equalsIgnoreCase(args[1])) {
+        if (args.length >= size && StreamAggregateConfig.MODEL.equalsIgnoreCase(args[1])) {
             runLocally = false;
-            csst = new StreamAggregateTopology(args[0]);
+            streamAggregateTopology = new StreamAggregateTopology(args[0]);
         } else {
-            csst = new StreamAggregateTopology();
+            streamAggregateTopology = new StreamAggregateTopology();
         }
 
-        csst.buildTopology();
+        streamAggregateTopology.buildTopology();
 
         if (runLocally) {
             logger.info("执行本地模式...");
-            csst.runLocally();
+            streamAggregateTopology.runLocally();
         } else {
             logger.info("执行远程部署模式...");
-            csst.runRemotely();
+            streamAggregateTopology.runRemotely();
         }
     }
 }

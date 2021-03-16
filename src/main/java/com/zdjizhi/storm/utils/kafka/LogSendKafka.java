@@ -1,9 +1,10 @@
-package cn.ac.iie.storm.utils.common;
+package com.zdjizhi.storm.utils.kafka;
 
 
-import cn.ac.iie.storm.utils.file.StreamAggregateConfig;
+import com.zdjizhi.storm.utils.common.StreamAggregateConfig;
+import cn.hutool.log.Log;
+import cn.hutool.log.LogFactory;
 import org.apache.kafka.clients.producer.*;
-import org.apache.log4j.Logger;
 
 import java.util.Properties;
 
@@ -16,7 +17,7 @@ import java.util.Properties;
 
 public class LogSendKafka {
 
-    private static Logger logger = Logger.getLogger(LogSendKafka.class);
+    private static final Log logger = LogFactory.get();
 
     /**
      * kafka生产者，用于向kafka中发送消息

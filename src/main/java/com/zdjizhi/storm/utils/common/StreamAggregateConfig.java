@@ -1,4 +1,4 @@
-package cn.ac.iie.storm.utils.file;
+package com.zdjizhi.storm.utils.common;
 
 
 /**
@@ -7,6 +7,7 @@ package cn.ac.iie.storm.utils.file;
 public class StreamAggregateConfig {
 
     public static final String FORMAT_SPLITTER = ",";
+    public static final String MODEL = "remote";
     /**
      * System
      */

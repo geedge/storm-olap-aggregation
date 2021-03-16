@@ -1,10 +1,11 @@
-package cn.ac.iie.storm.bolt;
+package com.zdjizhi.storm.bolt;
 
-import cn.ac.iie.storm.utils.combine.AggregateUtils;
-import cn.ac.iie.storm.utils.file.StreamAggregateConfig;
-import cn.ac.iie.storm.utils.http.HttpClientUtil;
+import com.zdjizhi.storm.utils.combine.AggregateUtils;
+import com.zdjizhi.storm.utils.common.StreamAggregateConfig;
+import com.zdjizhi.storm.utils.http.HttpClientUtil;
+import cn.hutool.log.Log;
+import cn.hutool.log.LogFactory;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.log4j.Logger;
 import org.apache.storm.Config;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.BasicOutputCollector;
@@ -25,7 +26,7 @@ import java.util.Map;
  * @Version V1.0
  **/
 public class GatheringBolt extends BaseBasicBolt {
-    private final static Logger logger = Logger.getLogger(GatheringBolt.class);
+    private static final Log logger = LogFactory.get();
     private static final long serialVersionUID = -6166717864837350277L;
     private HashMap<String, JSONObject> metricsMap;
     private HashMap<String, String[]> actionMap;

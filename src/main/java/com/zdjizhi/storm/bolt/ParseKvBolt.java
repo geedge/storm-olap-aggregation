@@ -1,13 +1,13 @@
-package cn.ac.iie.storm.bolt;
+package com.zdjizhi.storm.bolt;
 
 
-import cn.ac.iie.storm.utils.combine.AggregateUtils;
-import cn.ac.iie.storm.utils.file.StreamAggregateConfig;
-import cn.ac.iie.storm.utils.http.HttpClientUtil;
+import com.zdjizhi.storm.utils.common.StreamAggregateConfig;
+import com.zdjizhi.storm.utils.http.HttpClientUtil;
+import cn.hutool.log.Log;
+import cn.hutool.log.LogFactory;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.zdjizhi.utils.StringUtil;
-import org.apache.log4j.Logger;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.BasicOutputCollector;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -21,8 +21,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static cn.ac.iie.storm.utils.combine.AggregateUtils.transDimensions;
-import static cn.ac.iie.storm.utils.combine.AggregateUtils.updateAppRelation;
+import static com.zdjizhi.storm.utils.combine.AggregateUtils.transDimensions;
+import static com.zdjizhi.storm.utils.combine.AggregateUtils.updateAppRelation;
 
 /**
  * @ClassNameMyWindowBolt
@@ -31,7 +31,7 @@ import static cn.ac.iie.storm.utils.combine.AggregateUtils.updateAppRelation;
  * @Version V1.0
  **/
 public class ParseKvBolt extends BaseBasicBolt {
-    private final static Logger logger = Logger.getLogger(ParseKvBolt.class);
+    private static final Log logger = LogFactory.get();
     private static final long serialVersionUID = -999382396035310355L;
     private JSONArray transforms;
     private JSONArray dimensions;
@@ -102,17 +102,6 @@ public class ParseKvBolt extends BaseBasicBolt {
                                         collector.emit(new Values(dimensionsObj.getString(name), dimensionsObj.toString(), message.toString()));
                                     }
                                     break;
-//                            case "hierarchy":
-//                                String hierarchyValue = message.getString(fieldName);
-//                                //TODO 执行拆分代码
-//                                if (StringUtil.isNotBlank(hierarchyValue) && StringUtil.isNotBlank(parameters)) {
-//                                    String[] hierarchyPars = parameters.split(StreamAggregateConfig.FORMAT_SPLITTER);
-//                                    String[] dimensionsArr = hierarchyValue.split(hierarchyPars[0]);
-//                                    //TODO 递归拼接tuple并发送出去
-//                                    System.out.println(dimensionsObj.get(name) + "---" + dimensionsObj.toString() + "---" + message.toString());
-//                                    AggregateUtils.reSend(1, dimensionsArr, "", collector, message, dimensionsObj, name);
-//                                }
-//                                break;
                                 default:
                                     break;
                             }
