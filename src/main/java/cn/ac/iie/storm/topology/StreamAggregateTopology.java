@@ -5,7 +5,7 @@ import cn.ac.iie.storm.bolt.GatheringBolt;
 import cn.ac.iie.storm.bolt.ResultSendBolt;
 import cn.ac.iie.storm.bolt.ParseKvBolt;
 import cn.ac.iie.storm.spout.CustomizedKafkaSpout;
-import cn.ac.iie.storm.utils.system.StreamAggregateConfig;
+import cn.ac.iie.storm.utils.file.StreamAggregateConfig;
 import org.apache.log4j.Logger;
 import org.apache.storm.Config;
 import org.apache.storm.generated.AlreadyAliveException;
@@ -82,25 +82,25 @@ public class StreamAggregateTopology {
     }
 
     public static void main(String[] args) throws Exception {
-        StreamAggregateTopology streamAggregateTopology;
+        StreamAggregateTopology csst = null;
         boolean runLocally = true;
         String parameter = "remote";
         int size = 2;
         if (args.length >= size && parameter.equalsIgnoreCase(args[1])) {
             runLocally = false;
-            streamAggregateTopology = new StreamAggregateTopology(args[0]);
+            csst = new StreamAggregateTopology(args[0]);
         } else {
-            streamAggregateTopology = new StreamAggregateTopology();
+            csst = new StreamAggregateTopology();
         }
 
-        streamAggregateTopology.buildTopology();
+        csst.buildTopology();
 
         if (runLocally) {
             logger.info("执行本地模式...");
-            streamAggregateTopology.runLocally();
+            csst.runLocally();
         } else {
             logger.info("执行远程部署模式...");
-            streamAggregateTopology.runRemotely();
+            csst.runRemotely();
         }
     }
 }

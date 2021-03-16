@@ -1,11 +1,12 @@
 package cn.ac.iie.storm.bolt;
 
 
+import cn.ac.iie.storm.utils.combine.AggregateUtils;
 import cn.ac.iie.storm.utils.common.LogSendKafka;
-import cn.ac.iie.storm.utils.logout.LogPrintUtil;
-import cn.ac.iie.storm.utils.system.StreamAggregateConfig;
+import cn.ac.iie.storm.utils.file.StreamAggregateConfig;
 import com.alibaba.fastjson.JSONObject;
 import com.zdjizhi.utils.StringUtil;
+import kafka.utils.json.JsonObject;
 import org.apache.log4j.Logger;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.BasicOutputCollector;
@@ -52,8 +53,7 @@ public class ResultSendBolt extends BaseBasicBolt {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("层级拆分或发送Kakfa异常,异常信息:" + LogPrintUtil.print(e));
+            logger.error(StreamAggregateConfig.RESULTS_OUTPUT_TOPIC + "日志发送Kafka过程出现异常,异常信息:" + e);
         }
     }
 

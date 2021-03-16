@@ -1,8 +1,8 @@
 package cn.ac.iie.storm.bolt;
 
 
-import cn.ac.iie.storm.utils.logout.LogPrintUtil;
-import cn.ac.iie.storm.utils.system.StreamAggregateConfig;
+import cn.ac.iie.storm.utils.combine.AggregateUtils;
+import cn.ac.iie.storm.utils.file.StreamAggregateConfig;
 import cn.ac.iie.storm.utils.http.HttpClientUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -121,8 +121,8 @@ public class ParseKvBolt extends BaseBasicBolt {
                 }
             }
         } catch (Exception e) {
+            logger.error("上层解析原始日志/拼接计算日志发送异常,异常信息:" + e);
             e.printStackTrace();
-            logger.error("上层解析原始日志/拼接计算日志发送异常,异常信息:" + LogPrintUtil.print(e));
         }
 
     }
