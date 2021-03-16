@@ -1,6 +1,7 @@
 package cn.ac.iie.storm.spout;
 
-import cn.ac.iie.storm.utils.file.StreamAggregateConfig;
+import cn.ac.iie.storm.utils.logout.LogPrintUtil;
+import cn.ac.iie.storm.utils.system.StreamAggregateConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -73,8 +74,7 @@ public class CustomizedKafkaSpout extends BaseRichSpout {
                 this.collector.emit(new Values(record.value()));
             }
         } catch (Exception e) {
-            logger.error("KafkaSpout发送消息出现异常!", e);
-            e.printStackTrace();
+            logger.error("KafkaSpout发送消息出现异常!" + LogPrintUtil.print(e));
         }
     }
 

@@ -1,7 +1,8 @@
 package cn.ac.iie.storm.bolt;
 
 import cn.ac.iie.storm.utils.combine.AggregateUtils;
-import cn.ac.iie.storm.utils.file.StreamAggregateConfig;
+import cn.ac.iie.storm.utils.logout.LogPrintUtil;
+import cn.ac.iie.storm.utils.system.StreamAggregateConfig;
 import cn.ac.iie.storm.utils.http.HttpClientUtil;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.log4j.Logger;
@@ -83,7 +84,8 @@ public class CalculateBolt extends BaseBasicBolt {
 
             }
         } catch (Exception e) {
-            logger.error("计算节点异常,异常信息:" + e);
+            e.printStackTrace();
+            logger.error("一级计算节点异常,异常信息:" + LogPrintUtil.print(e));
         }
 
     }
@@ -155,17 +157,4 @@ public class CalculateBolt extends BaseBasicBolt {
                 break;
         }
     }
-
-
-//     cacheMessage.put("sessions", AggregateUtils.longSum(cacheMessage.getString("sessions"), event.getString("common_sessions")));
-//                cacheMessage.put("c2s_byte_num", AggregateUtils.longSum(cacheMessage.getString("c2s_byte_num"), event.getString("common_c2s_byte_num")));
-//                cacheMessage.put("s2c_byte_num", AggregateUtils.longSum(cacheMessage.getString("s2c_byte_num"), event.getString("common_s2c_byte_num")));
-//                cacheMessage.put("c2s_pkt_num", AggregateUtils.longSum(cacheMessage.getString("c2s_pkt_num"), event.getString("common_c2s_pkt_num")));
-//                cacheMessage.put("s2c_pkt_num", AggregateUtils.longSum(cacheMessage.getString("s2c_pkt_num"), event.getString("common_s2c_pkt_num")));
-//                cacheMessage.put("c2s_ipfrag_num", AggregateUtils.longSum(cacheMessage.getString("c2s_ipfrag_num"), event.getString("common_c2s_ipfrag_num")));
-//                cacheMessage.put("s2c_ipfrag_num", AggregateUtils.longSum(cacheMessage.getString("s2c_ipfrag_num"), event.getString("common_s2c_ipfrag_num")));
-//                cacheMessage.put("c2s_tcp_lostlen", AggregateUtils.longSum(cacheMessage.getString("c2s_tcp_lostlen"), event.getString("common_c2s_tcp_lostlen")));
-//                cacheMessage.put("s2c_tcp_lostlen", AggregateUtils.longSum(cacheMessage.getString("s2c_tcp_lostlen"), event.getString("common_s2c_tcp_lostlen")));
-//                cacheMessage.put("c2s_tcp_unorder_num", AggregateUtils.longSum(cacheMessage.getString("c2s_tcp_unorder_num"), event.getString("common_c2s_tcp_unorder_num")));
-//                cacheMessage.put("s2c_tcp_unorder_num", AggregateUtils.longSum(cacheMessage.getString("s2c_tcp_unorder_num"), event.getString("common_s2c_tcp_unorder_num")));
 }

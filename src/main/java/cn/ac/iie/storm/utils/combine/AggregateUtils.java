@@ -1,7 +1,10 @@
 package cn.ac.iie.storm.utils.combine;
 
-import cn.ac.iie.storm.utils.file.StreamAggregateConfig;
+import cn.ac.iie.storm.utils.logout.LogPrintUtil;
+import cn.ac.iie.storm.utils.system.StreamAggregateConfig;
 import cn.ac.iie.storm.utils.http.HttpClientUtil;
+import cn.hutool.log.Log;
+import cn.hutool.log.LogFactory;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.log4j.Logger;
@@ -19,6 +22,7 @@ import java.util.HashMap;
  **/
 public class AggregateUtils {
     private final static Logger logger = Logger.getLogger(AggregateUtils.class);
+    private static final Log log = LogFactory.get();
 
     /**
      * Long类型的数据求和
@@ -139,16 +143,6 @@ public class AggregateUtils {
                 .getString("name");
     }
 
-    public static void main(String[] args) {
-        String sc = "{\"status\":200,\"code\":\"200666\",\"queryKey\":null,\"success\":true,\"message\":\"ok\",\"statistics\":null,\"formatType\":null,\"meta\":null,\"data\":{\"type\":\"record\",\"name\":\"liveChart\",\"doc\":{\"timestamp\":{\"name\":\"stat_time\",\"type\":\"Long\"},\"dimensions\":[{\"name\":\"protocol_id\",\"fieldName\":\"common_protocol_label\",\"type\":\"String\"},{\"name\":\"entrance_id\",\"fieldName\":\"common_entrance_id\",\"type\":\"String\"},{\"name\":\"isp\",\"fieldName\":\"common_isp\",\"type\":\"String\"},{\"name\":\"data_center\",\"fieldName\":\"common_data_center\",\"type\":\"String\"}],\"metrics\":[{\"function\":\"sum\",\"name\":\"sessions\",\"fieldName\":\"common_sessions\"},{\"function\":\"sum\",\"name\":\"c2s_byte_num\",\"fieldName\":\"common_c2s_byte_num\"},{\"function\":\"sum\",\"name\":\"s2c_byte_num\",\"fieldName\":\"common_s2c_byte_num\"},{\"function\":\"sum\",\"name\":\"c2s_pkt_num\",\"fieldName\":\"common_c2s_pkt_num\"},{\"function\":\"sum\",\"name\":\"s2c_pkt_num\",\"fieldName\":\"common_s2c_pkt_num\"},{\"function\":\"sum\",\"name\":\"c2s_ipfrag_num\",\"fieldName\":\"common_c2s_ipfrag_num\"},{\"function\":\"sum\",\"name\":\"s2c_ipfrag_num\",\"fieldName\":\"common_s2c_ipfrag_num\"},{\"function\":\"sum\",\"name\":\"c2s_tcp_lostlen\",\"fieldName\":\"common_c2s_tcp_lostlen\"},{\"function\":\"sum\",\"name\":\"s2c_tcp_lostlen\",\"fieldName\":\"common_s2c_tcp_lostlen\"},{\"function\":\"sum\",\"name\":\"c2s_tcp_unorder_num\",\"fieldName\":\"common_c2s_tcp_unorder_num\"},{\"function\":\"sum\",\"name\":\"s2c_tcp_unorder_num\",\"fieldName\":\"common_s2c_tcp_unorder_num\"},{\"function\":\"disCount\",\"name\":\"unique_sip_num\",\"fieldName\":\"common_server_ip\"},{\"function\":\"disCount\",\"name\":\"unique_cip_num\",\"fieldName\":\"common_client_ip\"}],\"filters\":{\"type\":\"and\",\"fields\":[{\"fieldName\":\"common_protocol_label\",\"type\":\"not\",\"values\":null}]},\"transforms\":[{\"fieldName\":\"common_app_label\",\"function\":\"replaceapp\",\"name\":\"common_app_label\",\"parameters\":\"0,/\"},{\"function\":\"combination\",\"name\":\"protocol_id\",\"fieldName\":\"common_protocol_label\",\"parameters\":\"common_app_label,/\"},{\"function\":\"hierarchy\",\"name\":\"protocol_id\",\"fieldName\":\"common_protocol_label\",\"parameters\":\"/\"}],\"action\":[{\"label\":\"Default\",\"metrics\":\"sessions,c2s_byte_num,s2c_byte_num,c2s_pkt_num,s2c_pkt_num,c2s_ipfrag_num,s2c_ipfrag_num,c2s_tcp_lostlen,s2c_tcp_lostlen,c2s_tcp_unorder_num,s2c_tcp_unorder_num\"}],\"granularity\":{\"type\":\"period\",\"period\":\"5M\"}},\"fields\":[],\"task\":\"Protocol-Distribution\",\"in\":\"CONNECTION-RECORD-COMPLETED-LOG\",\"out\":\"TRAFFIC-PROTOCOL-STAT-LOG\"}}";
-        JSONObject jsonObject = JSONObject.parseObject(sc);
-        String data = jsonObject.getString("data");
-
-        System.out.println(JSONObject.parseObject(JSONObject.parseObject(JSONObject.parseObject(data)
-                .getString("doc"))
-                .getString("timestamp"))
-                .getString("name"));
-    }
 
     /**
      * 更新缓存中的对应关系map
@@ -174,11 +168,12 @@ public class AggregateUtils {
                 }
 
             }
-            System.out.println((System.currentTimeMillis() - begin));
-            logger.warn("更新缓存中的对应的APP关系,拉取接口数据长度:[" + objects.size());
+
+            log.info("更新缓存中APP关系耗时："+(System.currentTimeMillis() - begin));
+            log.info("更新缓存中的对应的APP关系,拉取接口数据长度:[" + objects.size());
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("更新缓存APP-ID失败,异常：" + e);
+            logger.error("更新缓存APP-ID失败,异常：" + LogPrintUtil.print(e));
         }
     }
 

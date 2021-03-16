@@ -1,7 +1,7 @@
 package cn.ac.iie.storm.utils.common;
 
 
-import cn.ac.iie.storm.utils.file.StreamAggregateConfig;
+import cn.ac.iie.storm.utils.system.StreamAggregateConfig;
 import org.apache.kafka.clients.producer.*;
 import org.apache.log4j.Logger;
 

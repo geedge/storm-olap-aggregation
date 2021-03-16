@@ -1,7 +1,8 @@
 package cn.ac.iie.storm.bolt;
 
 import cn.ac.iie.storm.utils.combine.AggregateUtils;
-import cn.ac.iie.storm.utils.file.StreamAggregateConfig;
+import cn.ac.iie.storm.utils.logout.LogPrintUtil;
+import cn.ac.iie.storm.utils.system.StreamAggregateConfig;
 import cn.ac.iie.storm.utils.http.HttpClientUtil;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.log4j.Logger;
@@ -85,7 +86,7 @@ public class GatheringBolt extends BaseBasicBolt {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("计算节点异常,异常信息:" + e);
+            logger.error("二级计算节点异常,异常信息:" + LogPrintUtil.print(e));
         }
 
     }
