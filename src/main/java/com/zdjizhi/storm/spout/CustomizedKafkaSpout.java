@@ -1,8 +1,10 @@
 package com.zdjizhi.storm.spout;
 
+import cn.hutool.core.thread.ThreadUtil;
 import com.zdjizhi.storm.utils.common.StreamAggregateConfig;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
+import com.zdjizhi.storm.utils.exception.AggregationException;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -68,13 +70,12 @@ public class CustomizedKafkaSpout extends BaseRichSpout {
         try {
             // TODO Auto-generated method stub
             ConsumerRecords<String, String> records = consumer.poll(10000L);
-            Thread.sleep(StreamAggregateConfig.TOPOLOGY_SPOUT_SLEEP_TIME);
+            ThreadUtil.sleep(StreamAggregateConfig.TOPOLOGY_SPOUT_SLEEP_TIME);
             for (ConsumerRecord<String, String> record : records) {
                 this.collector.emit(new Values(record.value()));
             }
-        } catch (Exception e) {
+        } catch (AggregationException e) {
             logger.error("KafkaSpout发送消息出现异常!", e);
-            e.printStackTrace();
         }
     }
 

@@ -2,6 +2,7 @@ package com.zdjizhi.storm.bolt;
 
 import com.zdjizhi.storm.utils.combine.AggregateUtils;
 import com.zdjizhi.storm.utils.common.StreamAggregateConfig;
+import com.zdjizhi.storm.utils.exception.AggregationException;
 import com.zdjizhi.storm.utils.http.HttpClientUtil;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
@@ -84,9 +85,8 @@ public class GatheringBolt extends BaseBasicBolt {
                 cacheMap.put(dimensions, cacheMessage);
 
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("计算节点异常,异常信息:" + e);
+        } catch (AggregationException e) {
+            logger.error("二次聚合异常,异常信息:" + e);
         }
 
     }

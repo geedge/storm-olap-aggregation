@@ -4,7 +4,7 @@
 
     <groupId>cn.ac.iie</groupId>
     <artifactId>storm-olap-aggregation</artifactId>
-    <version>v3.20.11.17-ratelimit</version>
+    <version>v3.21.03.16-eal4</version>
     <packaging>jar</packaging>
 
 
@@ -18,6 +18,19 @@
             <id>nexus</id>
             <name>Team Nexus Repository</name>
             <url>http://192.168.40.125:8099/content/groups/public</url>
+        </repository>
+
+        <repository>
+            <id>maven-ali</id>
+            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>fail</checksumPolicy>
+            </snapshots>
         </repository>
 
     </repositories>
@@ -56,6 +69,19 @@
                 </executions>
             </plugin>
 
+            <plugin>
+                <groupId>io.github.zlika</groupId>
+                <artifactId>reproducible-build-maven-plugin</artifactId>
+                <version>0.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>strip-jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

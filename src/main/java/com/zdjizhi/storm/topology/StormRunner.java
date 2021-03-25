@@ -1,6 +1,7 @@
 package com.zdjizhi.storm.topology;
 
 
+import cn.hutool.core.thread.ThreadUtil;
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
 import org.apache.storm.StormSubmitter;
@@ -21,7 +22,7 @@ public final class StormRunner {
 		
 		LocalCluster localCluster = new LocalCluster();
 		localCluster.submitTopology(topologyName, conf, builder.createTopology());
-		Thread.sleep((long) runtimeInSeconds * MILLS_IN_SEC); 
+		ThreadUtil.sleep((long) runtimeInSeconds * MILLS_IN_SEC);
 		localCluster.shutdown();
 		
 	}

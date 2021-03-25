@@ -2,6 +2,7 @@ package com.zdjizhi.storm.bolt;
 
 
 import com.zdjizhi.storm.utils.common.StreamAggregateConfig;
+import com.zdjizhi.storm.utils.exception.AggregationException;
 import com.zdjizhi.storm.utils.http.HttpClientUtil;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
@@ -109,9 +110,8 @@ public class ParseKvBolt extends BaseBasicBolt {
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (AggregationException e) {
             logger.error("上层解析原始日志/拼接计算日志发送异常,异常信息:" + e);
-            e.printStackTrace();
         }
 
     }

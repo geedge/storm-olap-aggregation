@@ -1,6 +1,5 @@
 package com.zdjizhi.storm.utils.http;
 
-import com.zdjizhi.storm.utils.logout.LogPrintUtil;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
 import org.apache.http.HttpEntity;
@@ -19,6 +18,7 @@ import java.io.InputStreamReader;
  * @author qidaijie
  */
 public class HttpClientUtil {
+    //    private static final int MAX_STR_LEN = 1024;
     private static final Log logger = LogFactory.get();
 
     /**
@@ -29,36 +29,50 @@ public class HttpClientUtil {
      */
     public static String requestByGetMethod(String http) {
         CloseableHttpClient httpClient = HttpClients.createDefault();
-        StringBuilder entityStringBuilder = null;
+        StringBuilder entityStringBuilder;
 
         HttpGet get = new HttpGet(http);
         BufferedReader bufferedReader = null;
-        try (CloseableHttpResponse httpResponse = httpClient.execute(get)) {
+        CloseableHttpResponse httpResponse = null;
+        try {
+            httpResponse = httpClient.execute(get);
             HttpEntity entity = httpResponse.getEntity();
             entityStringBuilder = new StringBuilder();
             if (null != entity) {
                 bufferedReader = new BufferedReader(new InputStreamReader(httpResponse.getEntity().getContent(), "UTF-8"), 8 * 1024);
-                String line;
-                while ((line = bufferedReader.readLine()) != null) {
-                    entityStringBuilder.append(line);
+                int intC;
+                while ((intC = bufferedReader.read()) != -1) {
+                    char c = (char) intC;
+                    if (c == '\n') {
+                        break;
+                    }
+                    entityStringBuilder.append(c);
                 }
+
+                return entityStringBuilder.toString();
             }
-        } catch (Exception e) {
-            logger.error(LogPrintUtil.print(e));
+        } catch (IOException e) {
+            logger.error("Get Schema from Query engine ERROR! Exception message is:" + e);
         } finally {
             if (httpClient != null) {
                 try {
                     httpClient.close();
                 } catch (IOException e) {
-                    logger.error(LogPrintUtil.print(e));
+                    logger.error("Close HTTP Client ERROR! Exception messgae is:" + e);
+                }
+            }
+            if (httpResponse != null) {
+                try {
+                    httpResponse.close();
+                } catch (IOException e) {
+                    logger.error("Close httpResponse ERROR! Exception messgae is:" + e);
                 }
             }
             if (bufferedReader != null) {
-//                    bufferedReader.close();
                 org.apache.commons.io.IOUtils.closeQuietly(bufferedReader);
             }
         }
-        return entityStringBuilder.toString();
+        return "";
     }
 
 }

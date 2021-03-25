@@ -1,6 +1,7 @@
 package com.zdjizhi.storm.bolt;
 
 
+import com.zdjizhi.storm.utils.exception.AggregationException;
 import com.zdjizhi.storm.utils.kafka.LogSendKafka;
 import com.zdjizhi.storm.utils.common.StreamAggregateConfig;
 import cn.hutool.log.Log;
@@ -51,7 +52,7 @@ public class ResultSendBolt extends BaseBasicBolt {
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (AggregationException e) {
             logger.error(StreamAggregateConfig.RESULTS_OUTPUT_TOPIC + "日志发送Kafka过程出现异常,异常信息:" + e);
         }
     }

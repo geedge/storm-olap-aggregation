@@ -1,5 +1,11 @@
 package com.zdjizhi.storm.utils.common;
 
+import com.zdjizhi.storm.utils.exception.AggregationException;
+import com.zdjizhi.utils.StringUtil;
+import org.apache.commons.lang.ObjectUtils;
+
+import java.io.IOException;
+import java.util.Locale;
 import java.util.Properties;
 
 
@@ -39,7 +45,7 @@ public final class StreamAggregateConfigurations {
 
     public static Boolean getBooleanProperty(Integer type, String key) {
         if (type == 0) {
-            return "true".equals(propService.getProperty(key).toLowerCase().trim());
+            return StringUtil.equals(propService.getProperty(key).toLowerCase().trim().toUpperCase(Locale.ENGLISH), "true");
         } else {
             return null;
         }
@@ -48,7 +54,7 @@ public final class StreamAggregateConfigurations {
     static {
         try {
             propService.load(StreamAggregateConfigurations.class.getClassLoader().getResourceAsStream("service_flow_config.properties"));
-        } catch (Exception e) {
+        } catch (IOException | AggregationException e) {
             propService = null;
         }
     }

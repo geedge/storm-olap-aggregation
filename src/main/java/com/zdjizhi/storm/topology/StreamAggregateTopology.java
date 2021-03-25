@@ -8,6 +8,7 @@ import com.zdjizhi.storm.spout.CustomizedKafkaSpout;
 import com.zdjizhi.storm.utils.common.StreamAggregateConfig;
 import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
+import com.zdjizhi.storm.utils.exception.AggregationException;
 import org.apache.storm.Config;
 import org.apache.storm.generated.AlreadyAliveException;
 import org.apache.storm.generated.AuthorizationException;
@@ -81,25 +82,29 @@ public class StreamAggregateTopology {
 
     }
 
-    public static void main(String[] args) throws Exception {
-        StreamAggregateTopology streamAggregateTopology;
-        boolean runLocally = true;
-        int size = 2;
-        if (args.length >= size && StreamAggregateConfig.MODEL.equalsIgnoreCase(args[1])) {
-            runLocally = false;
-            streamAggregateTopology = new StreamAggregateTopology(args[0]);
-        } else {
-            streamAggregateTopology = new StreamAggregateTopology();
-        }
+    public static void main(String[] args) {
+        try {
+            StreamAggregateTopology streamAggregateTopology;
+            boolean runLocally = true;
+            int size = 2;
+            if (args.length >= size && StreamAggregateConfig.MODEL.equalsIgnoreCase(args[1])) {
+                runLocally = false;
+                streamAggregateTopology = new StreamAggregateTopology(args[0]);
+            } else {
+                streamAggregateTopology = new StreamAggregateTopology();
+            }
 
-        streamAggregateTopology.buildTopology();
+            streamAggregateTopology.buildTopology();
 
-        if (runLocally) {
-            logger.info("执行本地模式...");
-            streamAggregateTopology.runLocally();
-        } else {
-            logger.info("执行远程部署模式...");
-            streamAggregateTopology.runRemotely();
+            if (runLocally) {
+                logger.info("执行本地模式...");
+                streamAggregateTopology.runLocally();
+            } else {
+                logger.info("执行远程部署模式...");
+                streamAggregateTopology.runRemotely();
+            }
+        } catch (AggregationException | InterruptedException | InvalidTopologyException | AlreadyAliveException | AuthorizationException e) {
+            logger.error("Topology Start ERROR! message is:" + e);
         }
     }
 }

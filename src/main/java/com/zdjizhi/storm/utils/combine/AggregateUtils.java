@@ -6,6 +6,7 @@ import cn.hutool.log.Log;
 import cn.hutool.log.LogFactory;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.zdjizhi.utils.StringUtil;
 import org.apache.storm.topology.BasicOutputCollector;
 import org.apache.storm.tuple.Values;
 
@@ -35,17 +36,16 @@ public class AggregateUtils {
         return Long.parseLong(value1) + Long.parseLong(value2);
     }
 
-    /**
-     * 计算Count
-     *
-     * @param count 当前count值
-     * @return count+1
-     */
-    public static Long count(Long count) {
-
-        count++;
-        return count;
-    }
+//    /**
+//     * 计算Count
+//     *
+//     * @param count 当前count值
+//     * @return count+1
+//     */
+//    public static Long count(Long count) {
+//
+//        return count++;
+//    }
 
 
     /**
@@ -72,32 +72,32 @@ public class AggregateUtils {
     }
 
 
-    /**
-     * 递归发送tuple
-     *
-     * @param headIndex    ssss
-     * @param splitArr
-     * @param initStr
-     * @param collector
-     * @param message
-     * @param dimesionsObj
-     * @param name
-     */
-    public static void reSend(int headIndex, String[] splitArr, String initStr, BasicOutputCollector collector, JSONObject message, JSONObject dimesionsObj, String name) {
-        //递归拼接字符串
-        if (splitArr.length != headIndex - 1) {
-            //递归的核心代码
-            if ("".equals(initStr)) {
-                initStr = splitArr[splitArr.length - headIndex];
-            } else {
-                initStr = initStr + "/" + splitArr[splitArr.length - headIndex];
-            }
-            dimesionsObj.put(name, initStr);
-
-            collector.emit(new Values(splitArr[splitArr.length - headIndex], dimesionsObj.toString(), message.toString()));
-            reSend(headIndex + 1, splitArr, initStr, collector, message, dimesionsObj, name);
-        }
-    }
+//    /**
+//     * 递归发送tuple
+//     *
+//     * @param headIndex    ssss
+//     * @param splitArr
+//     * @param initStr
+//     * @param collector
+//     * @param message
+//     * @param dimesionsObj
+//     * @param name
+//     */
+//    public static void reSend(int headIndex, String[] splitArr, String initStr, BasicOutputCollector collector, JSONObject message, JSONObject dimesionsObj, String name) {
+//        //递归拼接字符串
+//        if (splitArr.length != headIndex - 1) {
+//            //递归的核心代码
+//            if ("".equals(initStr)) {
+//                initStr = splitArr[splitArr.length - headIndex];
+//            } else {
+//                initStr = initStr + "/" + splitArr[splitArr.length - headIndex];
+//            }
+//            dimesionsObj.put(name, initStr);
+//
+//            collector.emit(new Values(splitArr[splitArr.length - headIndex], dimesionsObj.toString(), message.toString()));
+//            reSend(headIndex + 1, splitArr, initStr, collector, message, dimesionsObj, name);
+//        }
+//    }
 
 
     /**
@@ -149,25 +149,25 @@ public class AggregateUtils {
         try {
             Long begin = System.currentTimeMillis();
             String schema = HttpClientUtil.requestByGetMethod(StreamAggregateConfig.APP_ID_HTTP);
-            String data = JSONObject.parseObject(schema).getString("data");
-            JSONArray objects = JSONArray.parseArray(data);
-            for (Object object : objects) {
-                JSONArray jsonArray = JSONArray.parseArray(object.toString());
-                Long key = jsonArray.getLong(0);
-                String value = jsonArray.getString(1);
-                if (hashMap.containsKey(key)) {
-                    if (!value.equals(hashMap.get(key))) {
+            if (StringUtil.isNotBlank(schema)) {
+                String data = JSONObject.parseObject(schema).getString("data");
+                JSONArray objects = JSONArray.parseArray(data);
+                for (Object object : objects) {
+                    JSONArray jsonArray = JSONArray.parseArray(object.toString());
+                    Long key = jsonArray.getLong(0);
+                    String value = jsonArray.getString(1);
+                    if (hashMap.containsKey(key)) {
+                        if (!value.equals(hashMap.get(key))) {
+                            hashMap.put(key, value);
+                        }
+                    } else {
                         hashMap.put(key, value);
                     }
-                } else {
-                    hashMap.put(key, value);
                 }
-
+                logger.warn("更新缓存对应关系用时:" + (begin - System.currentTimeMillis()));
+                logger.warn("更新缓存中的对应的APP关系,拉取接口数据长度:[" + objects.size());
             }
-            System.out.println((System.currentTimeMillis() - begin));
-            logger.warn("更新缓存中的对应的APP关系,拉取接口数据长度:[" + objects.size());
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (RuntimeException e) {
             logger.error("更新缓存APP-ID失败,异常：" + e);
         }
     }
