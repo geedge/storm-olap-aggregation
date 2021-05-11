@@ -1,6 +1,5 @@
 package com.zdjizhi.storm.bolt;
 
-
 import com.zdjizhi.storm.utils.common.StreamAggregateConfig;
 import com.zdjizhi.storm.utils.exception.AggregationException;
 import com.zdjizhi.storm.utils.http.HttpClientUtil;
@@ -18,12 +17,10 @@ import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
 import org.apache.storm.utils.TupleUtils;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.zdjizhi.storm.utils.combine.AggregateUtils.transDimensions;
-import static com.zdjizhi.storm.utils.combine.AggregateUtils.updateAppRelation;
 
 /**
  * @ClassNameMyWindowBolt
@@ -36,7 +33,7 @@ public class ParseKvBolt extends BaseBasicBolt {
     private static final long serialVersionUID = -999382396035310355L;
     private JSONArray transforms;
     private JSONArray dimensions;
-    private static HashMap<Long, String> appMap = new HashMap<>(32);
+//    private static HashMap<Integer, String> appMap = new HashMap<>(32);
 
 
     /**
@@ -55,7 +52,7 @@ public class ParseKvBolt extends BaseBasicBolt {
 
         //TODO 获取dimensions
         dimensions = JSONObject.parseArray(JSONObject.parseObject(data).getString("dimensions"));
-        updateAppRelation(appMap);
+//        updateAppRelation(appMap);
 
     }
 
@@ -63,7 +60,7 @@ public class ParseKvBolt extends BaseBasicBolt {
     public void execute(Tuple tuple, BasicOutputCollector collector) {
         try {
             if (TupleUtils.isTick(tuple)) {
-                updateAppRelation(appMap);
+//                updateAppRelation(appMap);
             } else {
                 String source = tuple.getStringByField("source");
                 if (StringUtil.isNotBlank(source)) {
@@ -84,24 +81,24 @@ public class ParseKvBolt extends BaseBasicBolt {
                             String parameters = transformObj.getString("parameters");
 
                             switch (function) {
-                                case "alignment":
+                                case "dismantling":
                                     if (StringUtil.isNotBlank(parameters)) {
                                         if (message.containsKey(fieldName)) {
-                                            alignmentUtils(parameters, message, name, fieldName);
+                                            dismantlingUtils(parameters, message, name, fieldName);
                                         }
                                     }
                                     break;
                                 case "combination":
                                     if (StringUtil.isNotBlank(parameters)) {
-                                        String l7Proto = message.getString("common_l7_protocol");
-                                        if (StringUtil.isNotBlank(l7Proto)) {
-                                            String res = l7Proto + "/" + message.getString(fieldName);
-                                            message.put(fieldName, res);
-                                            dimensionsObj.put(name, res);
+                                        if (message.containsKey(fieldName)) {
+                                            combinationUtils(parameters, message, name, fieldName, dimensionsObj);
                                         }
-                                        combinationUtils(parameters, message, name, fieldName, dimensionsObj);
-                                        collector.emit(new Values(dimensionsObj.getString(name), dimensionsObj.toString(), message.toString()));
                                     }
+                                    break;
+                                case "hierarchy":
+//                                    if (StringUtil.isNotBlank(parameters)) {
+                                    collector.emit(new Values(dimensionsObj.getString(name), dimensionsObj.toString(), message.toString()));
+//                                    }
                                     break;
                                 default:
                                     break;
@@ -131,26 +128,24 @@ public class ParseKvBolt extends BaseBasicBolt {
 
     /**
      * alignment ID替换操作
+     * 根据缓存中的AppId对应信息，获取当前AppId对应的具体名称。
      *
      * @param parameters 参数集
      * @param message    原始日志
      * @param name       结果日志列名
      * @param fieldName  原始日志列名
      */
-    private static void alignmentUtils(String parameters, JSONObject message, String name, String fieldName) {
+    private static void dismantlingUtils(String parameters, JSONObject message, String name, String fieldName) {
         String[] alignmentPars = parameters.split(StreamAggregateConfig.FORMAT_SPLITTER);
-        String data = message.getString(fieldName);
-        logger.warn("alignmentPars=" + Arrays.toString(alignmentPars) + "data=" + data);
-        int subscript = Integer.parseInt(alignmentPars[0]);
-        String[] fieldSplit = data.split(alignmentPars[1]);
-        Long appId = Long.valueOf(fieldSplit[subscript]);
-        int length = fieldSplit[subscript].length();
-        StringBuilder sb = new StringBuilder(data);
-        message.put(name, sb.replace(0, length, appMap.get(appId)));
+        String commonAppId = message.getString(fieldName);
+        int digits = Integer.parseInt(alignmentPars[0]);
+        String appName = commonAppId.split(StreamAggregateConfig.PROTOCOL_SPLITTER)[digits];
+        message.put(name, appName);
     }
 
     /**
      * combination 拼接操作
+     * 获取方法函数中 parameters 字段，结构 "parameters": "abc,/" ;abc为要拼接字段 /为拼接的分隔符
      *
      * @param parameters    参数集
      * @param message       原始日志
@@ -160,9 +155,10 @@ public class ParseKvBolt extends BaseBasicBolt {
      */
     private static void combinationUtils(String parameters, JSONObject message, String name, String fieldName, JSONObject dimensionsObj) {
         String[] combinationPars = parameters.split(StreamAggregateConfig.FORMAT_SPLITTER);
-        String parameter0Value = message.getString(combinationPars[0]);
-        if (StringUtil.isNotBlank(parameter0Value)) {
-            String combinationValue = parameter0Value + combinationPars[1] + message.getString(fieldName);
+        String combinationField = message.getString(combinationPars[0]);
+        String splitter = combinationPars[1];
+        if (StringUtil.isNotBlank(combinationField)) {
+            String combinationValue = message.getString(fieldName) + splitter + combinationField;
             message.put(fieldName, combinationValue);
             dimensionsObj.put(name, combinationValue);
         }

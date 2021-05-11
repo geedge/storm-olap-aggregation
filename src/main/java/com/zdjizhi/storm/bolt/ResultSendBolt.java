@@ -1,7 +1,9 @@
 package com.zdjizhi.storm.bolt;
 
 
+import com.zdjizhi.storm.utils.combine.AggregateUtils;
 import com.zdjizhi.storm.utils.exception.AggregationException;
+import com.zdjizhi.storm.utils.http.HttpClientUtil;
 import com.zdjizhi.storm.utils.kafka.LogSendKafka;
 import com.zdjizhi.storm.utils.common.StreamAggregateConfig;
 import cn.hutool.log.Log;
@@ -26,10 +28,15 @@ public class ResultSendBolt extends BaseBasicBolt {
     private static final long serialVersionUID = 3237813470939823159L;
     private static final Log logger = LogFactory.get();
     private LogSendKafka logSendKafka;
+    private static String regex;
+    private static String name;
 
     @Override
     public void prepare(Map stormConf, TopologyContext context) {
+        String schema = HttpClientUtil.requestByGetMethod(StreamAggregateConfig.SCHEMA_HTTP);
         logSendKafka = LogSendKafka.getInstance();
+        regex = AggregateUtils.getHierarchy(schema, "parameters");
+        name = AggregateUtils.getHierarchy(schema, "name");
     }
 
     @Override
@@ -39,21 +46,21 @@ public class ResultSendBolt extends BaseBasicBolt {
             if (StringUtil.isNotBlank(message)) {
                 JSONObject jsonObject = JSONObject.parseObject(message);
                 StringBuffer stringBuffer = new StringBuffer();
-                String[] protocolIds = jsonObject.getString("protocol_id").split("/");
-                for (int i = (protocolIds.length - 1); i >= 0; i--) {
+                String[] protocolIds = jsonObject.getString(name).split(StreamAggregateConfig.PROTOCOL_SPLITTER);
+                for (String proto : protocolIds) {
                     if (StringUtil.isBlank(stringBuffer.toString())) {
-                        stringBuffer.append(protocolIds[i]);
-                        jsonObject.put("protocol_id", stringBuffer.toString());
+                        stringBuffer.append(proto);
+                        jsonObject.put(name, stringBuffer.toString());
                         logSendKafka.sendMessage(jsonObject.toString());
                     } else {
-                        stringBuffer.append("/").append(protocolIds[i]);
-                        jsonObject.put("protocol_id", stringBuffer.toString());
+                        stringBuffer.append(regex).append(proto);
+                        jsonObject.put(name, stringBuffer.toString());
                         logSendKafka.sendMessage(jsonObject.toString());
                     }
                 }
             }
         } catch (AggregationException e) {
-            logger.error(StreamAggregateConfig.RESULTS_OUTPUT_TOPIC + "日志发送Kafka过程出现异常,异常信息:" + e);
+            logger.error("日志发送Kafka过程出现异常,异常信息:" + e);
         }
     }
 

@@ -36,16 +36,16 @@ public class AggregateUtils {
         return Long.parseLong(value1) + Long.parseLong(value2);
     }
 
-//    /**
-//     * 计算Count
-//     *
-//     * @param count 当前count值
-//     * @return count+1
-//     */
-//    public static Long count(Long count) {
-//
-//        return count++;
-//    }
+    /**
+     * 计算Count
+     *
+     * @param count 当前count值
+     * @return count+1
+     */
+    public static Long count(Long count) {
+
+        return count++;
+    }
 
 
     /**
@@ -72,34 +72,6 @@ public class AggregateUtils {
     }
 
 
-//    /**
-//     * 递归发送tuple
-//     *
-//     * @param headIndex    ssss
-//     * @param splitArr
-//     * @param initStr
-//     * @param collector
-//     * @param message
-//     * @param dimesionsObj
-//     * @param name
-//     */
-//    public static void reSend(int headIndex, String[] splitArr, String initStr, BasicOutputCollector collector, JSONObject message, JSONObject dimesionsObj, String name) {
-//        //递归拼接字符串
-//        if (splitArr.length != headIndex - 1) {
-//            //递归的核心代码
-//            if ("".equals(initStr)) {
-//                initStr = splitArr[splitArr.length - headIndex];
-//            } else {
-//                initStr = initStr + "/" + splitArr[splitArr.length - headIndex];
-//            }
-//            dimesionsObj.put(name, initStr);
-//
-//            collector.emit(new Values(splitArr[splitArr.length - headIndex], dimesionsObj.toString(), message.toString()));
-//            reSend(headIndex + 1, splitArr, initStr, collector, message, dimesionsObj, name);
-//        }
-//    }
-
-
     /**
      * 获取action模块的Map集合
      *
@@ -121,6 +93,27 @@ public class AggregateUtils {
             map.put(label, metrics);
         }
         return map;
+    }
+
+    /**
+     * 获取分隔符
+     *
+     * @param schema 动态获取的schema
+     * @return （HTTP，metrics数组）
+     */
+    public static String getHierarchy(String schema, String key) {
+        String result = "";
+        JSONObject jsonObject = JSONObject.parseObject(schema);
+        String data = jsonObject.getString("data");
+        JSONArray actions = JSONObject.parseArray(JSONObject.parseObject(JSONObject.parseObject(data).getString("doc")).getString("transforms"));
+        for (Object transform : actions) {
+            JSONObject transformObj = JSONObject.parseObject(transform.toString());
+            String function = transformObj.getString("function");
+            if ("hierarchy".equals(function)) {
+                result = transformObj.getString(key);
+            }
+        }
+        return result;
     }
 
 
@@ -145,7 +138,7 @@ public class AggregateUtils {
      *
      * @param hashMap 当前缓存对应关系map
      */
-    public static void updateAppRelation(HashMap<Long, String> hashMap) {
+    public static void updateAppRelation(HashMap<Integer, String> hashMap) {
         try {
             Long begin = System.currentTimeMillis();
             String schema = HttpClientUtil.requestByGetMethod(StreamAggregateConfig.APP_ID_HTTP);
@@ -154,7 +147,7 @@ public class AggregateUtils {
                 JSONArray objects = JSONArray.parseArray(data);
                 for (Object object : objects) {
                     JSONArray jsonArray = JSONArray.parseArray(object.toString());
-                    Long key = jsonArray.getLong(0);
+                    int key = jsonArray.getInteger(0);
                     String value = jsonArray.getString(1);
                     if (hashMap.containsKey(key)) {
                         if (!value.equals(hashMap.get(key))) {
@@ -188,4 +181,5 @@ public class AggregateUtils {
         }
         return dimensionsObj;
     }
+
 }

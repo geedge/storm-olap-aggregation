@@ -2,15 +2,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>cn.ac.iie</groupId>
+    <groupId>com.zdjizhi</groupId>
     <artifactId>storm-olap-aggregation</artifactId>
-    <version>v3.21.03.16-eal4</version>
+    <version>v3.21.04.28-history-live</version>
     <packaging>jar</packaging>
-
 
     <name>storm-olap-aggregation</name>
     <url>http://maven.apache.org</url>
-
 
     <repositories>
 
@@ -18,19 +16,6 @@
             <id>nexus</id>
             <name>Team Nexus Repository</name>
             <url>http://192.168.40.125:8099/content/groups/public</url>
-        </repository>
-
-        <repository>
-            <id>maven-ali</id>
-            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-                <checksumPolicy>fail</checksumPolicy>
-            </snapshots>
         </repository>
 
     </repositories>
@@ -43,9 +28,12 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>2.4.2</version>
+                <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                </configuration>
                 <executions>
                     <execution>
-                        <phase>package</phase>
+                        <phase>install</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
@@ -78,7 +66,7 @@
                         <goals>
                             <goal>strip-jar</goal>
                         </goals>
-                        <phase>package</phase>
+                        <phase>install</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -190,24 +178,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.apache.zookeeper/zookeeper -->
-        <dependency>
-            <groupId>org.apache.zookeeper</groupId>
-            <artifactId>zookeeper</artifactId>
-            <version>3.4.9</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>slf4j-log4j12</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>log4j-over-slf4j</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
